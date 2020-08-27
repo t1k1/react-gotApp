@@ -1,8 +1,6 @@
 import React, {Component} from 'react';
 import styled from 'styled-components';
-import gotService from '../../services/gotService';
 import Spinner from '../spinner';
-import ErrorMessage from '../errorMessage';
 
 const ItemListUl = styled.ul`
     cursor: pointer;
@@ -14,56 +12,51 @@ const ItemListLi = styled.li`
 
 export default class ItemList extends Component {
 
-    gotService = new gotService();
-
     state = {
-        charList: null,
-        error: false
+        itemList: null
     }
 
-    componentDidMount(){
-        this.gotService.getAllCharacters()
-            .then((charList) => {
+    componentDidMount() {
+        const {getData} = this.props;
+
+        getData()
+            .then( (itemList) => {
                 this.setState({
-                    charList
+                    itemList
                 })
             })
     }
 
-    onError = (err) => {
-        this.setState({
-            error: true
-        })
-    }
+    renderItems(arr) {
+        return arr.map((item) => {
+            const {id} = item;
 
-    renderItems(arr){
-        return arr.map((item) =>{
-            const {id, name} = item;
+            const label = this.props.renderItem(item);
+
             return (
-                <ItemListLi 
+                <li 
                     key={id}
                     className="list-group-item"
-                    onClick={ () => this.props.onCharSelected(id)}>
-                    {name}
-                </ItemListLi>
+                    onClick={ () => this.props.onItemSelected(id)}>
+                    {label}
+                </li>
             )
         })
     }
 
+
     render() {
+        const {itemList} = this.state;
 
-        const {charList, error} = this.state;
-
-        if(!charList){
+        if (!itemList) {
             return <Spinner/>
         }
 
-        const errorMessage = error ? <ErrorMessage/> : null;
-        const items = this.renderItems(charList);
+        const items = this.renderItems(itemList);
+
 
         return (
             <ItemListUl className="list-group">
-                {errorMessage}
                 {items}
             </ItemListUl>
         );
